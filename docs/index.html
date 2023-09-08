@@ -57,7 +57,7 @@ body[data-page="timeline"] button[data-page="timeline"], body[data-page="map"] b
 #akihabara svg { width: 100%; }
 path:not([data-stamp]), rect { pointer-events: none; user-select: none; }
 .pointer { cursor: pointer; }
-.pointer .check { fill: #1a98e0; }
+.pointer .check { fill: #f00; }
 #info { display: block; position: absolute; top: 0.5rem; right: 0.5rem; width: 6.5rem; font-size: 0.5rem; }
 	</style>
 	<script>
@@ -135,12 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		};
 		document.querySelectorAll('[data-stamp]').forEach((pin) => {
+			const time = pin.parentElement.dataset.open;
 			pin.addEventListener('click', () => {
 				reset();
 				pin.classList.add('check');
 				const link = document.querySelector(`a[name="stamp_${pin.dataset.stamp}"]`);
 				if (link) {
-					info.textContent = link.textContent;
+					info.innerHTML = `${time}<br>${link.textContent}`;
 				} else {
 					info.textContent = 'ベルサール秋葉原';
 				}
@@ -418,22 +419,28 @@ document.addEventListener('DOMContentLoaded', () => {
 					<path d="m10 0v40h-10v5h10v65h-10v5h10v65h-10v5h10v55h-10v15h40v110h-40v5h40v10h-40v5h40v48.094l-40-23.094v23.094l100 57.734v9.1719h30v-10h370v-20h-40v-80h-80v10 70h-135v-50-10h-115v-50h140v-360h-15v240h-80v-240h-5v85h-40v-85h-30v40h-45v-40h-5v40h-35v-40h-5zm5 45h35v65h-35v-65zm40 0h45v65h-45v-65zm75 50h40v105h-40v-105zm-115 20h35v65h-35v-65zm40 0h45v65h-45v-65zm-40 70h85v55h-85v-55zm115 20h40v35h-40v-35zm-85 50h55v50h-55v-50zm85 0h20v30h-20v-30zm25 0h60v65h-60v-65zm75 0h30v40h-20v25h-10v-65zm-100 35h20v60h-20v-60zm-85 20h55v55h-55v-55zm110 20h60v20h-60v-20zm-110 40h55v10h-55v-10zm0 15h55v30h-55v-30zm350 15h55v70h-55v-70zm-350 20h55v47.734l-55-31.754v-15.98zm85 0h40v50h-40v-50zm45 0h25v50h-25v-50zm30 0h30v50h-30v-50z" fill="#ffd93e" />
 					<path d="m270 0v370h-270v10h270v120h10v-120h10v120h10v-120h10v120h10v-120h180v-10h-180v-370h-10v370h-10v-370h-10v370h-10v-370h-10z" fill="#b3b3b3" />
 					<path d="m270 260v100h-140v40h140v100h50v-100h90v-40h-90v-100h-50z" fill="#faa" stroke-width="1.0801" style="paint-order:markers fill stroke"/>
-					<g fill="#f00" class="pointer">
+					<g fill="#6e7dd9" class="pointer" data-open="9:30(整理券)">
 						<path data-stamp="0" d="m85 185c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+						<path data-stamp="5" d="m95 390c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+					</g>
+					<g fill="#7cd1cc" class="pointer" data-open="10:00">
 						<path data-stamp="1" d="m205 410c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="2" d="m145 160c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
-						<path data-stamp="3" d="m85 295c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="4" d="m150 135c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
-						<path data-stamp="5" d="m95 390c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
-						<path data-stamp="6" d="m185 420c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="7" d="m200 435c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
-						<path data-stamp="8" d="m160 95c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+					</g>
+					<g fill="#7cd189" class="pointer" data-open="11:00">
+						<path data-stamp="3" d="m85 295c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+						<path data-stamp="6" d="m185 420c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="9" d="m490 475c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+						<path data-stamp="13" d="m95 325c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+						<path data-stamp="14" d="m270 375c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
+					</g>
+					<g fill="#b67cd1" class="pointer" data-open="24時間営業">
+						<path data-stamp="8" d="m160 95c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="10" d="m150 450c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="11" d="m80 10c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 						<path data-stamp="12" d="m500 425c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
-						<path data-stamp="13" d="m95 325c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
-						<path data-stamp="14" d="m270 375c0 5.5228-5 15-10 20-5-5-10-14.477-10-20s4.4772-10 10-10 10 4.4772 10 10z" />
 					</g>
 				</svg>
 				<div id="info"></div>
