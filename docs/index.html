@@ -12,11 +12,10 @@
 	<style>
 :root { --header: 2rem; --time: 2rem; }
 html { height: 100%; }
-body { margin: 0; display: grid; grid-template-rows: var(--header) calc(100% - var(--header)); height: 100%; overflow: hidden; background: rgba(0,0,0,0.1); }
-header { display: flex; justify-content: space-evenly; position: relative; box-sizing: border-box; padding-right: var(--header); }
+body { margin: 0; display: grid; grid-template-rows: var(--header) calc(100% - var(--header)); background: #e5e5e5; position: relative; padding-top: var(--header); }
+header { display: flex; justify-content: space-evenly; position: relative; box-sizing: border-box; padding-right: var(--header); position: fixed; top: 0; left: 0; width: 100%; height: var(--header); background: #e5e5e5; z-index: 10; }
 header > button:not(:last-child) { border: none; background: #959595; flex: 1; }
-header > button:last-child { position: absolute; right: 0; box-sizing: border-box; width: 2rem; height: 2rem; }
-body > div { overflow: auto; }
+header > button:last-child { position: absolute; right: 0; box-sizing: border-box; width: var(--header); height: var(--header); }
 a { text-decoration: none; }
 button { cursor: pointer; font-size: 1rem; }
 dialog { padding: 0; border: none; background: transparent; }
