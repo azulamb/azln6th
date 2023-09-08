@@ -10,44 +10,443 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<link rel="apple-touch-icon" sizes="152x152" href="./apple-touch-icon-precomposed.png">
 	<style>
+:root { --header: 2rem; --time: 2rem; }
 html { height: 100%; }
-body { margin: 0; display: grid; grid-template-rows: 2rem calc(100% - 2rem); height: 100%; overflow: hidden; }
-header { display: flex; justify-content: space-evenly; }
+body { margin: 0; display: grid; grid-template-rows: var(--header) calc(100% - var(--header)); height: 100%; overflow: hidden; background: rgba(0,0,0,0.1); }
+header { display: flex; justify-content: space-evenly; position: relative; box-sizing: border-box; padding-right: var(--header); }
+header > button:not(:last-child) { border: none; background: #959595; flex: 1; }
+header > button:last-child { position: absolute; right: 0; box-sizing: border-box; width: 2rem; height: 2rem; }
 body > div { overflow: auto; }
 a { text-decoration: none; }
+button { cursor: pointer; font-size: 1rem; }
+dialog { padding: 0; border: none; background: transparent; }
+dialog > div { background-color: white; padding: 0.5rem; }
+dialog::backdrop { background-color: rgba(0, 0, 0, 0.8); }
+.timeline { position: relative; }
+.timeline .back { display: flex; flex-wrap: nowrap; }
+.timeline .back > div { flex: 1; display: grid; grid-template-columns: 100%; grid-template-rows: 1rem var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time) var(--time); }
+.timeline .back > div:first-child { flex: 0 0 1.5rem; }
+.timeline .back > div > div { box-sizing: border-box; border-top: 1px solid gray; }
+.timeline .back > div > span { opacity: 0.4; font-size: 0.5rem; margin-top: -0.35rem; text-align: right; }
+.timeline h4 { font-size: 0.6rem; text-align: center; margin: 0; padding: 0; line-height: 1rem; opacity: 0.4; }
+.timeline .front { display: flex; flex-wrap: nowrap; position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-sizing: border-box; padding-top: 1rem; padding-left: 1.5rem; }
+.timeline .front > div { flex: 1; position: relative; }
+.timeline .front > div > button { display: flex; width: calc(100% - 0.5rem); margin: 0 0.25rem; border: none; background: #b1b1b1c7; justify-content: center; align-items: center; text-align: center; border-radius: 0.5rem; position: absolute; font-size: 0.6rem; top: calc(var(--time) * var(--t, 0)); --t: calc(var(--m, 0) / 15 + (var(--h, 0) - 9) * 4 - 1 ); }
+.timeline .front > div > button.join{ background: #6eb5d1c7; }
+.timeline hr { position: absolute; width: calc(100% - 1.5rem); top: calc(1rem + var(--time) * var(--m, 0) / 15); border: 1px solid red; opacity: 0.7; left: 1.5rem; margin: -1px 0 0 0; }
+.m15 { height: var(--time); }
+.m30 { height: calc(var(--time) * 2); }
+.m45 { height: calc(var(--time) * 3); }
+.m60 { height: calc(var(--time) * 4); }
+.m90 { height: calc(var(--time) * 6); }
+ul, dl { list-style: none; padding: 0; margin: 0.5rem 0; }
+li, dt, dd { text-align: center; }
+li + li { margin-top: 0.5rem; }
+dt { opacity: 0.4; }
+dd { margin: 0.5rem 0; background: #fff; }
+h2, h3 { font-size: 1rem; margin: 0.5rem 0; text-align: center; }
+section { box-sizing: border-box; padding-bottom: 3rem; }
+body[data-page="timeline"] section:not(#timeline), body[data-page="map"] section:not(#map) { display: none; }
+body[data-page="timeline"] button[data-page="timeline"], body[data-page="map"] button[data-page="map"] { background: transparent; }
+.option { display: flex; justify-content: flex-end; }
+.option label { font-size: 0.8rem; font-size: 0.8rem; overflow: hidden; position: relative; padding-left: 1.2rem; }
+.option label > input { position: absolute; right: 101%; }
+.option label::before { content: var(--checked, ''); display: block; border: 2px solid gray; width: 0.8rem; height: 0.8rem; border-radius: 0.1rem; position: absolute; top: 0.1rem; left: 0.1rem; font-size: 0.8rem; font-weight: bold; line-height: 1rem; }
+.option label:has(:checked) { --checked: '✓'; }
 	</style>
 	<script>
 document.addEventListener('DOMContentLoaded', () => {
+	((dialog) => {
+		document.getElementById('menu').addEventListener('click', () => {
+			dialog.showModal();
+		});
+		dialog.addEventListener('click', () => {
+			dialog.close();
+		});
+		dialog.querySelector('div').addEventListener('click', (event) => {
+			event.stopPropagation();
+		});
+	})(document.querySelector('dialog'));
+	document.querySelectorAll('header > button[data-page]').forEach((button) => {
+		button.addEventListener('click', () => {
+			document.body.dataset.page = button.dataset.page;
+		});
+	});
+	const update = ((hr) => {
+		return () => {
+			const now = new Date();
+			const hour = now.getHours();
+			const minute = now.getMinutes();
+			const m = Math.max(0, (hour - 9) * 60 + minute - 15);
+			hr.style.setProperty('--m', m);
+		};
+	})(document.getElementById('now'));
+	update();
+
+	((checkbox) => {
+		let timer = 0;
+		checkbox.addEventListener('change', () => {
+			if (checkbox.checked) {
+				update();
+				if (timer) {
+					clearInterval(timer);
+				}
+				timer = setInterval(update, 1000 * 60);
+				localStorage.setItem('azln6th_autoupdate', true);
+			} else {
+				clearInterval(timer);
+				timer = 0;
+				localStorage.removeItem('azln6th_autoupdate');
+			}
+		});
+		if (localStorage.getItem('azln6th_autoupdate')) {
+			checkbox.checked = true;
+			timer = setInterval(update, 1000 * 60);
+		}
+	})(document.getElementById('autoupdate'));
+
+	document.querySelectorAll('button[data-event]').forEach((button) => {
+		const key = `azln6th_${button.dataset.event}`;
+		button.addEventListener('click', () => {
+			if (localStorage.getItem(key)) {
+				localStorage.removeItem(key);
+				button.classList.remove('join');
+			} else {
+				localStorage.setItem(key, true);
+				button.classList.add('join');
+			}
+		});
+		if (localStorage.getItem(key)) {
+			button.classList.add('join');
+		} else {
+			button.classList.remove('join');
+		}
+	});
 });
 	</script>
 </head>
-<body>
+<body data-page="timeline">
 	<header>
-		<a href="https://6th-anniversary.azurlane.jp/" target="_blank">周年ページ</a>
-		<a href="https://entry-6th-anniversary.azurlane.jp/" target="_blank">チケット発行</a>
+		<button data-page="timeline">タイムライン</button>
+		<button data-page="map">地図</button>
+		<button id="menu">≡</button>
 	</header>
 	<div>
-		<section>
-			<h2>地図</h2>
-			<a href="https://goo.gl/maps/MKuaUY6nTLfeh1k5A">全箇所</a>
-			<h3>9:30</h3>
-			<a href="https://www.google.com/maps/place/CURE+MAID+CAF%C3%89/@35.698292,139.7683439,17z/data=!4m3!3m2!1s0x60188c1ddf563b07:0x6e2e3f0619693511!16s%2Fg%2F1tcyl0gj">CURE MAID CAFE' ＆ジーストア・アキバ</a>
-			<h3>10:00</h3>
-			<a href="https://www.google.com/maps/place/%E3%82%AE%E3%83%95%E3%83%88%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97+%E3%82%B6%E3%83%BB%E3%82%A2%E3%82%AD%E3%83%90/@35.6980619,139.7720247,15z/data=!4m6!3m5!1s0x60188c1d47a71d53:0x95baf6f98f620ec!8m2!3d35.6980619!4d139.7720247!16s%2Fg%2F11bbx0szgp?entry=tts&shorturl=1">ギフトショップ The AkiBa</a>
-			<a href="https://www.google.com/maps/place/%E3%82%BF%E3%82%A4%E3%83%88%E3%83%BC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3+%E7%A7%8B%E8%91%89%E5%8E%9F%E5%BA%97/@35.7002483,139.7691221,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d983806c1:0xff1bda404887f82!8m2!3d35.700244!4d139.771697!16s%2Fg%2F1tdgvcxt?entry=tts&shorturl=1">タイトーステーション 秋葉原店</a>
-			<a href="https://www.google.com/maps/place/%E3%82%A2%E3%83%8B%E3%83%A1%E3%82%A4%E3%83%88%E7%A7%8B%E8%91%89%E5%8E%9F/@35.7004214,139.7718029,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d96fb5701:0x9276f70f9d512927!8m2!3d35.7004214!4d139.7718029!16s%2Fg%2F1tk8nlb7?entry=ttu">アニメイト秋葉原</a>
-			<a href="https://www.google.com/maps/place/YellowSubmarine/@35.6979181,139.7693271,17z/data=!3m2!4b1!5s0x60188c1d4ec7e8c5:0xe1cd45eab8745f07!4m6!3m5!1s0x60188c1d492d2133:0xe06d9318139951f8!8m2!3d35.6979138!4d139.771902!16s%2Fg%2F11b80735s9?entry=tts&shorturl=1">イエローサブマリン 秋葉原本店★ミント</a>
-			<h3>11:00</h3>
-			<a href="https://www.google.co.jp/maps/place/%EF%BC%A8%EF%BD%85%EF%BD%99/@35.6990763,139.7683421,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d0fa74495:0x5d25013b2f9319a4!8m2!3d35.699072!4d139.770917!16s%2Fg%2F1wfvmn3q?hl=ja&entry=tts&shorturl=1">タイトーステーション Hey</a>
-			<a href="https://www.google.com/maps/place/%E3%81%82%E3%81%BF%E3%81%82%E3%81%BF%E7%A7%8B%E8%91%89%E5%8E%9F%E3%83%A9%E3%82%B8%E3%82%AA%E4%BC%9A%E9%A4%A8%E5%BA%97/@35.6979976,139.7693723,17z/data=!3m2!4b1!5s0x60188c1d14ec9ac7:0xf5c6887406ddbfa6!4m6!3m5!1s0x60188c1d48b80587:0x3831dbf489c3d06f!8m2!3d35.6979933!4d139.7719472!16s%2Fg%2F11d_d4tksq?entry=tts&shorturl=1">あみあみ 秋葉原ラジオ会館店</a>
-			<a href="https://www.google.com/maps/place/%E6%9B%B8%E6%B3%89%E3%83%96%E3%83%83%E3%82%AF%E3%82%BF%E3%83%AF%E3%83%BC/@35.6973805,139.7725858,17z/data=!3m1!4b1!4m6!3m5!1s0x60188ea8594e3d2d:0x584342b8f8323fb6!8m2!3d35.6973762!4d139.7751607!16s%2Fg%2F1ttpgx1w?entry=tts&shorturl=1">書泉ブックタワー</a>
-			<a href="https://www.google.com/maps/place/%E3%82%BD%E3%83%95%E3%83%9E%E3%83%83%E3%83%97+AKIBA+%E3%82%A2%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%BA%E3%83%A1%E3%83%B3%E3%83%88%E9%A4%A8/@35.6988979,139.7684237,17z/data=!3m2!4b1!5s0x60188c1d0fd544ab:0xfdd53be7693ce735!4m6!3m5!1s0x60188c1d0fe5f00b:0x74183b95de9f7cb8!8m2!3d35.6988936!4d139.7709986!16s%2Fg%2F11b636d6bm?entry=tts&shorturl=1">ソフマップ AKIBAアミューズメント館</a>
-			<a href="https://www.google.com/maps/place/%E3%83%94%E3%82%B3%E3%82%AF%E3%83%AC%E3%83%BC%E3%83%97+%E7%A7%8B%E8%91%89%E5%8E%9F%E6%9D%B1%E8%A5%BF%E8%87%AA%E7%94%B1%E9%80%9A%E8%B7%AF%E5%BA%97/@35.6981778,139.7703131,17z/data=!3m2!4b1!5s0x60188ea7fb3e8d1d:0x43e73db1068c4d97!4m6!3m5!1s0x60188f627a77d10f:0x7940226270280bb1!8m2!3d35.6981735!4d139.772888!16s%2Fg%2F11jp0tl38f?entry=tts&shorturl=1">ピコクレープ 秋葉原東西自由通路店</a>
-			<h3>24h営業</h3>
-			<a href="https://www.google.com/maps/place/%E3%83%89%E3%83%B3%E3%83%BB%E3%82%AD%E3%83%9B%E3%83%BC%E3%83%86+%E7%A7%8B%E8%91%89%E5%8E%9F%E5%BA%97/@35.7007458,139.7693738,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d94792ded:0xb7cb5bbf410fc5be!8m2!3d35.7007415!4d139.7719487!16s%2Fg%2F1vcl3rnp?entry=tts&shorturl=1">ドン・キホーテ 秋葉原店</a>
-			<a href="https://www.google.com/maps/place/%E3%82%AB%E3%83%A9%E3%82%AA%E3%82%B1%E3%81%BE%E3%81%AD%E3%81%8D%E3%81%AD%E3%81%93%E7%A7%8B%E8%91%89%E5%8E%9F%E9%9B%BB%E6%B0%97%E8%A1%97%E5%8F%A3%E5%BA%97/@35.6977066,139.7688549,17z/data=!3m2!4b1!5s0x60188c1d36e3c953:0xa1d1f34d1951e1e8!4m6!3m5!1s0x60188d088c980065:0x62ff6f332eedca2b!8m2!3d35.6977023!4d139.7714298!16s%2Fg%2F11k3kqh7k7?entry=tts&shorturl=1">カラオケまねきねこ 秋葉原電気街口店</a>
-			<a href="https://www.google.co.jp/maps/place/%E3%82%AB%E3%83%A9%E3%82%AA%E3%82%B1%E3%81%BE%E3%81%AD%E3%81%8D%E3%81%AD%E3%81%93%E7%A7%8B%E8%91%89%E5%8E%9F%E5%BA%97/@35.699085,139.7683421,17z/data=!3m1!5s0x60188c1ddbfb10a9:0xa3dd1d5f7c259c4f!4m7!3m6!1s0x60188c1ddbde068f:0x90222a9f4d344216!8m2!3d35.7015679!4d139.7711931!15sChvjgb7jga3jgY3jga3jgZPjgIDnp4vokYnljp9aGyIZ44G-44Gt44GN44Gt44GTIOeni-iRieWOn5IBB2thcmFva2XgAQA!16s%2Fg%2F1hhlp8plj?hl=ja&entry=tts&shorturl=1">カラオケまねきねこ 秋葉原店(ノベルティ配布のみ)</a>
+		<div class="option">
+			<label>
+				<input type="checkbox" id="autoupdate">
+				自動更新
+			</label>
+		</div>
+		<section id="timeline">
+			<div class="timeline">
+				<div class="back">
+					<div>
+						<h4></h4>
+						<span>9:15</span>
+						<span>9:30</span>
+						<span>9:45</span>
+						<span>10:00</span>
+						<span>10:15</span>
+						<span>10:30</span>
+						<span>10:45</span>
+						<span>11:00</span>
+						<span>11:15</span>
+						<span>11:30</span>
+						<span>11:45</span>
+						<span>12:00</span>
+						<span>12:15</span>
+						<span>12:30</span>
+						<span>12:45</span>
+						<span>13:00</span>
+						<span>13:15</span>
+						<span>13:30</span>
+						<span>13:45</span>
+						<span>14:00</span>
+						<span>14:15</span>
+						<span>14:30</span>
+						<span>14:45</span>
+						<span>15:00</span>
+						<span>15:15</span>
+						<span>15:30</span>
+						<span>15:45</span>
+						<span>16:00</span>
+						<span>16:15</span>
+						<span>16:30</span>
+						<span>16:45</span>
+						<span>17:00</span>
+						<span>17:15</span>
+						<span>17:30</span>
+						<span>17:45</span>
+						<span>18:00</span>
+						<span>18:15</span>
+						<span>18:30</span>
+					</div>
+					<div>
+						<h4>9日</h4>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div>
+						<h4>関連イベ</h4>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div>
+						<h4>10日</h4>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div>
+						<h4>関連イベ</h4>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+				</div>
+				<div class="front">
+					<div>
+						<button data-event="9_0" class="m30" style="--h:12;--m:0">オープニングステージ DAY1</button>
+						<button data-event="9_1" class="m60" style="--h:13;--m:0">アズナンデス！6周年振り返りSP</button>
+						<button data-event="9_2" class="m45" style="--h:14;--m:30">リアル饅頭クイズ$アズオネア</button>
+						<button data-event="9_3" class="m45" style="--h:15;--m:45">アズレン一問一答！裏側スタッフトーク</button>
+						<button data-event="9_4" class="m90" style="--h:17;--m:0">アズレン公式生放送DAY1 〜祝６周年！新情報解禁SP〜</button>
+					</div>
+					<div>
+						<button data-event="9s_0" class="m30" style="--h:10;--m:0">ミャチ整理券</button>
+						<button data-event="9s_1" class="m30" style="--h:11;--m:0">ミャチ</button>
+						<button data-event="9s_2" class="m30" style="--h:12;--m:0">ミャチ</button>
+						<button data-event="9s_3" class="m30" style="--h:13;--m:0">ミャチ</button>
+						<button data-event="9s_4" class="m30" style="--h:15;--m:0">ミャチ</button>
+						<button data-event="9s_5" class="m30" style="--h:16;--m:0">ミャチ</button>
+					</div>
+					<div>
+						<button data-event="10_0" class="m30" style="--h:12;--m:0">オープニングステージ DAY2</button>
+						<button data-event="10_1" class="m60" style="--h:13;--m:0">アズジャーナル 鈴鹿8耐振り返りトーク</button>
+						<button data-event="10_2" class="m45" style="--h:14;--m:30">指揮官の声を聴かせて！おもいっきりアズ電話</button>
+						<button data-event="10_3" class="m45" style="--h:15;--m:45">アズレン総本家～伝統コラボSP～</button>
+						<button data-event="10_4" class="m90" style="--h:17;--m:0">アズレン公式生放送DAY2 〜まだまだあります最新情報〜 ＆ グランドフィナーレ</button>
+					</div>
+					<div>
+						<button data-event="10s_0" class="m30" style="--h:10;--m:0">ミャチ整理券</button>
+						<button data-event="10s_1" class="m30" style="--h:11;--m:0">ミャチ</button>
+						<button data-event="10s_2" class="m30" style="--h:12;--m:30">ミャチ</button>
+						<button data-event="10s_3" class="m30" style="--h:14;--m:0">ミャチ</button>
+						<button data-event="10s_4" class="m30" style="--h:15;--m:30">ミャチ</button>
+					</div>
+				</div>
+				<hr id="now">
+			</div>
+		</section>
+		<section id="map">
+			<dl>
+				<dt>地図</dt>
+				<dd>
+					<a href="https://goo.gl/maps/MKuaUY6nTLfeh1k5A">全箇所</a>
+				</dd>
+				<dt>9:30</dt>
+				<dd>
+					<a href="https://www.google.com/maps/place/CURE+MAID+CAF%C3%89/@35.698292,139.7683439,17z/data=!4m3!3m2!1s0x60188c1ddf563b07:0x6e2e3f0619693511!16s%2Fg%2F1tcyl0gj">CURE MAID CAFE' ＆ジーストア・アキバ</a>
+					(整理券)
+				</dd>
+				<dt>10:00</dt>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%82%AE%E3%83%95%E3%83%88%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97+%E3%82%B6%E3%83%BB%E3%82%A2%E3%82%AD%E3%83%90/@35.6980619,139.7720247,15z/data=!4m6!3m5!1s0x60188c1d47a71d53:0x95baf6f98f620ec!8m2!3d35.6980619!4d139.7720247!16s%2Fg%2F11bbx0szgp?entry=tts&shorturl=1">ギフトショップ The AkiBa</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%82%BF%E3%82%A4%E3%83%88%E3%83%BC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3+%E7%A7%8B%E8%91%89%E5%8E%9F%E5%BA%97/@35.7002483,139.7691221,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d983806c1:0xff1bda404887f82!8m2!3d35.700244!4d139.771697!16s%2Fg%2F1tdgvcxt?entry=tts&shorturl=1">タイトーステーション 秋葉原店</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%82%A2%E3%83%8B%E3%83%A1%E3%82%A4%E3%83%88%E7%A7%8B%E8%91%89%E5%8E%9F/@35.7004214,139.7718029,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d96fb5701:0x9276f70f9d512927!8m2!3d35.7004214!4d139.7718029!16s%2Fg%2F1tk8nlb7?entry=ttu">アニメイト秋葉原</a>
+					(ゴール)
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/YellowSubmarine/@35.6979181,139.7693271,17z/data=!3m2!4b1!5s0x60188c1d4ec7e8c5:0xe1cd45eab8745f07!4m6!3m5!1s0x60188c1d492d2133:0xe06d9318139951f8!8m2!3d35.6979138!4d139.771902!16s%2Fg%2F11b80735s9?entry=tts&shorturl=1">イエローサブマリン 秋葉原本店★ミント</a>
+				</dd>
+				<dt>11:00</dt>
+				<dd>
+					<a href="https://www.google.co.jp/maps/place/%EF%BC%A8%EF%BD%85%EF%BD%99/@35.6990763,139.7683421,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d0fa74495:0x5d25013b2f9319a4!8m2!3d35.699072!4d139.770917!16s%2Fg%2F1wfvmn3q?hl=ja&entry=tts&shorturl=1">タイトーステーション Hey</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%81%82%E3%81%BF%E3%81%82%E3%81%BF%E7%A7%8B%E8%91%89%E5%8E%9F%E3%83%A9%E3%82%B8%E3%82%AA%E4%BC%9A%E9%A4%A8%E5%BA%97/@35.6979976,139.7693723,17z/data=!3m2!4b1!5s0x60188c1d14ec9ac7:0xf5c6887406ddbfa6!4m6!3m5!1s0x60188c1d48b80587:0x3831dbf489c3d06f!8m2!3d35.6979933!4d139.7719472!16s%2Fg%2F11d_d4tksq?entry=tts&shorturl=1">あみあみ 秋葉原ラジオ会館店</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E6%9B%B8%E6%B3%89%E3%83%96%E3%83%83%E3%82%AF%E3%82%BF%E3%83%AF%E3%83%BC/@35.6973805,139.7725858,17z/data=!3m1!4b1!4m6!3m5!1s0x60188ea8594e3d2d:0x584342b8f8323fb6!8m2!3d35.6973762!4d139.7751607!16s%2Fg%2F1ttpgx1w?entry=tts&shorturl=1">書泉ブックタワー</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%82%BD%E3%83%95%E3%83%9E%E3%83%83%E3%83%97+AKIBA+%E3%82%A2%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%BA%E3%83%A1%E3%83%B3%E3%83%88%E9%A4%A8/@35.6988979,139.7684237,17z/data=!3m2!4b1!5s0x60188c1d0fd544ab:0xfdd53be7693ce735!4m6!3m5!1s0x60188c1d0fe5f00b:0x74183b95de9f7cb8!8m2!3d35.6988936!4d139.7709986!16s%2Fg%2F11b636d6bm?entry=tts&shorturl=1">ソフマップ AKIBAアミューズメント館</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%83%94%E3%82%B3%E3%82%AF%E3%83%AC%E3%83%BC%E3%83%97+%E7%A7%8B%E8%91%89%E5%8E%9F%E6%9D%B1%E8%A5%BF%E8%87%AA%E7%94%B1%E9%80%9A%E8%B7%AF%E5%BA%97/@35.6981778,139.7703131,17z/data=!3m2!4b1!5s0x60188ea7fb3e8d1d:0x43e73db1068c4d97!4m6!3m5!1s0x60188f627a77d10f:0x7940226270280bb1!8m2!3d35.6981735!4d139.772888!16s%2Fg%2F11jp0tl38f?entry=tts&shorturl=1">ピコクレープ 秋葉原東西自由通路店</a>
+				</dd>
+				<dt>24h営業</dt>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%83%89%E3%83%B3%E3%83%BB%E3%82%AD%E3%83%9B%E3%83%BC%E3%83%86+%E7%A7%8B%E8%91%89%E5%8E%9F%E5%BA%97/@35.7007458,139.7693738,17z/data=!3m1!4b1!4m6!3m5!1s0x60188c1d94792ded:0xb7cb5bbf410fc5be!8m2!3d35.7007415!4d139.7719487!16s%2Fg%2F1vcl3rnp?entry=tts&shorturl=1">ドン・キホーテ 秋葉原店</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.com/maps/place/%E3%82%AB%E3%83%A9%E3%82%AA%E3%82%B1%E3%81%BE%E3%81%AD%E3%81%8D%E3%81%AD%E3%81%93%E7%A7%8B%E8%91%89%E5%8E%9F%E9%9B%BB%E6%B0%97%E8%A1%97%E5%8F%A3%E5%BA%97/@35.6977066,139.7688549,17z/data=!3m2!4b1!5s0x60188c1d36e3c953:0xa1d1f34d1951e1e8!4m6!3m5!1s0x60188d088c980065:0x62ff6f332eedca2b!8m2!3d35.6977023!4d139.7714298!16s%2Fg%2F11k3kqh7k7?entry=tts&shorturl=1">カラオケまねきねこ 秋葉原電気街口店</a>
+				</dd>
+				<dd>
+					<a href="https://www.google.co.jp/maps/place/%E3%82%AB%E3%83%A9%E3%82%AA%E3%82%B1%E3%81%BE%E3%81%AD%E3%81%8D%E3%81%AD%E3%81%93%E7%A7%8B%E8%91%89%E5%8E%9F%E5%BA%97/@35.699085,139.7683421,17z/data=!3m1!5s0x60188c1ddbfb10a9:0xa3dd1d5f7c259c4f!4m7!3m6!1s0x60188c1ddbde068f:0x90222a9f4d344216!8m2!3d35.7015679!4d139.7711931!15sChvjgb7jga3jgY3jga3jgZPjgIDnp4vokYnljp9aGyIZ44G-44Gt44GN44Gt44GTIOeni-iRieWOn5IBB2thcmFva2XgAQA!16s%2Fg%2F1hhlp8plj?hl=ja&entry=tts&shorturl=1">カラオケまねきねこ 秋葉原店(ノベルティ配布のみ)</a>
+				</dd>
+			</dl>
 		</section>
 	</div>
+	<dialog>
+		<div>
+			<h2>公式関連</h2>
+			<ul>
+				<li>
+					<a href="https://6th-anniversary.azurlane.jp/" target="_blank">周年ページ</a>
+				</li>
+				<li>
+					<a href="https://entry-6th-anniversary.azurlane.jp/" target="_blank">チケット発行</a>
+				</li>
+			</ul>
+		</div>
+	</dialog>
 </body>
 </html>
