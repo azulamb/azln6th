@@ -20,7 +20,7 @@ body > div { overflow: auto; }
 a { text-decoration: none; }
 button { cursor: pointer; font-size: 1rem; }
 dialog { padding: 0; border: none; background: transparent; }
-dialog > div { background-color: white; padding: 0.5rem; }
+dialog > div { background-color: white; padding: 0.5rem; border-radius: 0.5rem; }
 dialog::backdrop { background-color: rgba(0, 0, 0, 0.8); }
 .timeline { position: relative; }
 .timeline .back { display: flex; flex-wrap: nowrap; }
@@ -132,13 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		<button id="menu">≡</button>
 	</header>
 	<div>
-		<div class="option">
-			<label>
-				<input type="checkbox" id="autoupdate">
-				自動更新
-			</label>
-		</div>
 		<section id="timeline">
+			<div class="option">
+				<label>
+					<input type="checkbox" id="autoupdate">
+					自動更新
+				</label>
+			</div>
 			<div class="timeline">
 				<div class="back">
 					<div>
@@ -446,6 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					<a href="https://entry-6th-anniversary.azurlane.jp/" target="_blank">チケット発行</a>
 				</li>
 			</ul>
+			<h2>QRコード</h2>
+			<img src="qr.png" alt="このサイト" style="width:7rem">
 		</div>
 	</dialog>
 </body>
